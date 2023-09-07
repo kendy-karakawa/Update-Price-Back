@@ -8,6 +8,18 @@ export type VerifildData = {
   product_code: number | string;
   valid?: boolean;
   error?: string;
+  name?: string;
+  sales_price?: string;
+  is_pack?: boolean
+  packsAsPack?: Pack[];
+  packs?: Pack[]
+}
+
+export type Pack = {
+  id: BigInt
+  pack_id: BigInt 
+  product_id: BigInt
+  qty: BigInt
 }
 
 export type DataWithValidField = {

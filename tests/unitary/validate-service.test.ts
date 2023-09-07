@@ -73,6 +73,7 @@ describe("Validate service teste suite", () => {
         name: "Bala",
         cost_price: 11.09,
         sales_price: 11.99,
+        is_pack: false
         }
 
     jest
@@ -91,6 +92,7 @@ describe("Validate service teste suite", () => {
       error: "O preço esta abaixo do custo",
       name: "Bala",
       sales_price: 11.99,
+      is_pack: false
     });
   });
 
@@ -101,6 +103,7 @@ describe("Validate service teste suite", () => {
         name: "Bala",
         cost_price: 10.09,
         sales_price: 11.99,
+        is_pack: false
         }
 
     jest
@@ -119,6 +122,7 @@ describe("Validate service teste suite", () => {
       error: "O preço esta com desconto de mais de 10% do preço atual",
       name: "Bala",
       sales_price: 11.99,
+      is_pack: false
     });
   });
 
@@ -129,6 +133,7 @@ describe("Validate service teste suite", () => {
         name: "Bala",
         cost_price: 10.09,
         sales_price: 11.99,
+        is_pack: false
         }
 
     jest
@@ -147,6 +152,7 @@ describe("Validate service teste suite", () => {
       error: "O preço esta mais de 10% do preço atual",
       name: "Bala",
       sales_price: 11.99,
+      is_pack: false
     });
   });
 });
