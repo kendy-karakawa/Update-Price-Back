@@ -5,10 +5,8 @@
   "main": "server.js",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && npm run migration:run && node dist/server.js",
     "migration:run": "prisma migrate deploy",
-    "migration:generate": "prisma migrate dev",
-    "dev:seed": "prisma db seed",
+    "seed": "prisma db seed",
     "dev": "nodemon --watch 'src/' --exec 'ts-node -r tsconfig-paths/register ./src/server.ts' -e ts",
     "test": "jest --runInBand"
   },
