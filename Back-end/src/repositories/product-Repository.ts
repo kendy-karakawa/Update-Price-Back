@@ -44,12 +44,27 @@ async function updateValue(product: ProductType) {
     
 }
 
+async function getComponentOfPackValue(code: number) {
+    const product = await prisma.product.findFirst({
+        where:{
+            code: code
+        },
+        include:{
+            packs: true
+        }
+    })
+
+    const value = Number(product.sales_price) * Number(product.packs[0].qty)
+    return value
+}
+
 
 
 
 const productRepository = {
     findByCode,
-    updateValue
+    updateValue,
+    getComponentOfPackValue
 }
 
 export default productRepository

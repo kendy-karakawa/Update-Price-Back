@@ -144,6 +144,7 @@ async function validatePriceAndFileExistence(
   //[ 18, 1000 ]
 
   const productCode = Number(object.product_code);
+  const newPrice = Number(object.new_price)
 
   const isPack = await packRepository.isPack(productCode);
   if (isPack) {
@@ -156,6 +157,17 @@ async function validatePriceAndFileExistence(
         valid: false,
         error: "Produto componente ausente no arquivo.",
       };
+
+      //--------------------------------------------------------------------------------------//
+      if(newPrice !== await sumPackComponents(unverifiedPacks, components )){
+        return {
+                ...object,
+                valid: false,
+                error: "Preço da soma dos components diferente do preço do pacote.",
+                };
+      }
+
+      //--------------------------------------------------------------------------------------//
   } else {
     const relatedPacks = await packRepository.getRelatedPacks(productCode);
     if (
@@ -176,6 +188,40 @@ async function validatePriceAndFileExistence(
     valid: true,
   };
 }
+
+async function sumPackComponents(unverifiedPacks: VerifildData[] , components){
+  let sumValues = 0
+  
+  
+  //Verificar na lista "unverifiedPacks" quais sao id de components
+  const componentsInData = unverifiedPacks.filter(pack => 
+      components.some(component => Number(component.code) === Number(pack.product_code))
+  );
+  
+  
+  //Verificar a quantidade desse componente no pacote e fazer quantidade x new_price e somar com sumValues
+  for(let item of componentsInData){
+    const qty = await packRepository.getQtyByComponentId(Number(item.product_code))	
+    sumValues += (Number(qty) * Number(item.new_price))
+  }
+  
+  
+  //Remover da lista "components" os produtos que estao "componentsInData"
+  const restComponents = components.filter(component => 
+      componentsInData.some(pack => Number(pack.product_code)!== Number(component.code))
+  );
+  
+  //Verificar a quantidade e o sales_prisce do component e fazer quantidade x sales_prisce e somar com sumValues
+  
+  for(let item of restComponents){
+    const value = await productRepository.getComponentOfPackValue(item.code)
+    sumValues += value
+  }
+  
+  
+  return sumValues 
+  } 
+
 
 const validateService = {
   validateData,

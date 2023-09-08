@@ -37,10 +37,21 @@ async function getRelatedPacks(productCode) {
   return relatedPacks.map(relatedPack => relatedPack.pack);
 }
 
+async function getQtyByComponentId(id: number) {
+  const component = await prisma.pack.findFirst({
+    where:{
+      product_id: id
+    }
+  })
+
+  return component.qty
+}
+
 const packRepository = {
     isPack,
     getComponents,
-    getRelatedPacks
+    getRelatedPacks,
+    getQtyByComponentId
 };
 
 export default packRepository;
