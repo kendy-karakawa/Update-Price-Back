@@ -10,21 +10,30 @@ export type VerifildData = {
   error?: string;
   name?: string;
   sales_price?: string;
-  is_pack?: boolean
+  is_pack?: boolean;
   packsAsPack?: Pack[];
-  packs?: Pack[]
-}
+  packs?: Pack[];
+};
 
 export type Pack = {
-  id: BigInt
-  pack_id: BigInt 
-  product_id: BigInt
-  qty: BigInt
-}
+  id: BigInt;
+  pack_id: BigInt;
+  product_id: BigInt;
+  qty: BigInt;
+};
 
 export type DataWithValidField = {
   new_price: number;
   product_code: number;
   valid?: boolean;
+  error?: string;
+};
+
+export type ProductType = {
+  new_price: number;
+  product_code: number;
+  valid: boolean;
+  is_pack: boolean;
+  name: string;
   error?: string;
 };

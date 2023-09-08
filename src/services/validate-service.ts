@@ -22,10 +22,9 @@ async function validateData(data: UnverifiedData[]) {
   }
 
   const verifildPack = await validatePackRules(unverifiedPacks);
-  console.log(verifildPack);
-  verifiedDatas.push(verifildPack);
+  const result = [ ...verifiedDatas, ...verifildPack]
 
-  return verifiedDatas;
+  return result;
 }
 
 async function validateAllFieldsExist(object: UnverifiedData) {
@@ -134,7 +133,6 @@ async function validatePackRules(unverifiedPacks: VerifildData[]) {
     verifiedDatas.push(result);
   }
 
-  console.log(verifiedDatas);
   return verifiedDatas;
 }
 
@@ -150,7 +148,6 @@ async function validatePriceAndFileExistence(
   const isPack = await packRepository.isPack(productCode);
   if (isPack) {
     const components = await packRepository.getComponents(productCode);
-    console.log(components);
     if (
       !components.some((pack) => productCodesInData.includes(Number(pack.code)))
     )

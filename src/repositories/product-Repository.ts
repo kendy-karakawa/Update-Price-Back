@@ -1,4 +1,5 @@
 import { prisma } from "@/config";
+import { ProductType } from "@/protocols";
 
 async function findByCode(code: number) {
     const product = await prisma.product.findFirst({
@@ -10,6 +11,8 @@ async function findByCode(code: number) {
             packs: true
         }
     })
+
+    if(!product) return null
 
     if(product.packs.length === 0 && product.packsAsPack.length === 0){
         return {
@@ -29,11 +32,24 @@ async function findByCode(code: number) {
     
 }
 
+async function updateValue(product: ProductType) {
+    return await prisma.product.update({
+        where: {
+            code: product.product_code
+        },
+        data:{
+            sales_price: product.new_price
+        }
+    })
+    
+}
+
 
 
 
 const productRepository = {
-    findByCode
+    findByCode,
+    updateValue
 }
 
 export default productRepository
