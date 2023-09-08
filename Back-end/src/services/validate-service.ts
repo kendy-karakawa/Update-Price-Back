@@ -6,6 +6,7 @@ import {
 } from "@/protocols";
 import packRepository from "@/repositories/pack-repository";
 import productRepository from "@/repositories/product-Repository";
+import { Product } from "@prisma/client";
 import { valid } from "joi";
 
 async function validateData(data: UnverifiedData[]) {
@@ -148,7 +149,7 @@ async function validatePriceAndFileExistence(
 
   const isPack = await packRepository.isPack(productCode);
   if (isPack) {
-    const components = await packRepository.getComponents(productCode);
+    const components: Product[] = await packRepository.getComponents(productCode);
     if (
       !components.some((pack) => productCodesInData.includes(Number(pack.code)))
     )
@@ -158,7 +159,6 @@ async function validatePriceAndFileExistence(
         error: "Produto componente ausente no arquivo.",
       };
 
-      //--------------------------------------------------------------------------------------//
       if(newPrice !== await sumPackComponents(unverifiedPacks, components )){
         return {
                 ...object,
@@ -167,9 +167,8 @@ async function validatePriceAndFileExistence(
                 };
       }
 
-      //--------------------------------------------------------------------------------------//
   } else {
-    const relatedPack = await packRepository.getRelatedPacks(productCode);
+    const relatedPack: Product = await packRepository.getRelatedPacks(productCode);
     
     if (!productCodesInData.includes(Number(relatedPack.code))) {
       return {
@@ -178,7 +177,6 @@ async function validatePriceAndFileExistence(
         error: "Prodito tipo Pack ausente no arquivo.",
       };
     }
-    //--------------------------------------------------------------------------------------//
     if(!await checkSumOfComponentsWithPack(unverifiedPacks, relatedPack ))
     return {
       ...object,
@@ -186,7 +184,6 @@ async function validatePriceAndFileExistence(
       error: "Preço da soma dos components diferente do preço do pacote.",
     };
 
-    //--------------------------------------------------------------------------------------//
   }
 
   return {
@@ -195,32 +192,28 @@ async function validatePriceAndFileExistence(
   };
 }
 
-async function sumPackComponents(unverifiedPacks: VerifildData[] , components){
+async function sumPackComponents(unverifiedPacks: VerifildData[] , components: Product[]){
   let sumValues = 0
   
   
-  //Verificar na lista "unverifiedPacks" quais sao id de components
-  const componentsInData = unverifiedPacks.filter(pack => 
+  const componentsInData: VerifildData[] = unverifiedPacks.filter(pack => 
       components.some(component => Number(component.code) === Number(pack.product_code))
   );
   
   
-  //Verificar a quantidade desse componente no pacote e fazer quantidade x new_price e somar com sumValues
   for(let item of componentsInData){
     const qty = await packRepository.getQtyByComponentId(Number(item.product_code))	
     sumValues += (Number(qty) * Number(item.new_price))
   }
   
   
-  //Remover da lista "components" os produtos que estao "componentsInData"
-  const restComponents = components.filter(component => 
+  const restComponents: Product[] = components.filter(component => 
       componentsInData.some(pack => Number(pack.product_code)!== Number(component.code))
   );
   
-  //Verificar a quantidade e o sales_prisce do component e fazer quantidade x sales_prisce e somar com sumValues
   
   for(let item of restComponents){
-    const value = await productRepository.getComponentOfPackValue(item.code)
+    const value = await productRepository.getComponentOfPackValue(Number(item.code))
     sumValues += value
   }
   
@@ -228,32 +221,26 @@ async function sumPackComponents(unverifiedPacks: VerifildData[] , components){
   return sumValues 
 }
 
-async function checkSumOfComponentsWithPack(unverifiedPacks: VerifildData[], relatedPack ){
-  //filtrar o unverifiedPacks para ficar apenas o pack
+async function checkSumOfComponentsWithPack(unverifiedPacks: VerifildData[], relatedPack: Product ){
   const packInData = unverifiedPacks.find(item => Number(item.product_code) === Number(relatedPack.code))
   const packNewPrice = packInData.new_price
   let sumValues = 0
   
-  //Pegar os componentes do packInData
-  const components = await packRepository.getComponents(Number(packInData.product_code))
+  const components: Product[] = await packRepository.getComponents(Number(packInData.product_code))
   
-  //Verificar na lista "unverifiedPacks" quais sao id de components
-  const componentsInData = unverifiedPacks.filter(pack => 
+  const componentsInData: VerifildData[] = unverifiedPacks.filter(pack => 
         components.some(component => Number(component.code) === Number(pack.product_code))
     );
   
-  //Verificar a quantidade desse componente no pacote e fazer quantidade x new_price e somar com sumValues
     for(let item of componentsInData){
       const qty = await packRepository.getQtyByComponentId(Number(item.product_code))	
       sumValues += (Number(qty) * Number(item.new_price))
     }
   
-  //Remover da lista "components" os produtos que estao "componentsInData"
-    const restComponents = components.filter(component => 
+    const restComponents: Product[] = components.filter(component => 
         componentsInData.some(pack => Number(pack.product_code)!== Number(component.code))
     );
     
-  //Verificar a quantidade e o sales_prisce do component e fazer quantidade x sales_prisce e somar com sumValues
     for(let item of restComponents){
       const value = await productRepository.getComponentOfPackValue(Number(item.code))
       sumValues += value
