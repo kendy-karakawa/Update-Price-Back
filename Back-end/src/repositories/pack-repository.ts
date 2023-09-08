@@ -25,7 +25,7 @@ async function getComponents(packCode: number) {
 }
 
 async function getRelatedPacks(productCode) {
-  const relatedPacks = await prisma.pack.findMany({
+  const relatedPacks = await prisma.pack.findFirst({
       where: {
           product_id: productCode
       },
@@ -34,7 +34,7 @@ async function getRelatedPacks(productCode) {
       }
   });
 
-  return relatedPacks.map(relatedPack => relatedPack.pack);
+  return relatedPacks.pack
 }
 
 async function getQtyByComponentId(id: number) {
