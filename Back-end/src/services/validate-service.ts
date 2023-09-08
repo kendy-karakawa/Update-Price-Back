@@ -174,7 +174,7 @@ async function validatePriceAndFileExistence(
       return {
         ...object,
         valid: false,
-        error: "Prodito tipo Pack ausente no arquivo.",
+        error: "Produto tipo Pack ausente no arquivo.",
       };
     }
     if(!await checkSumOfComponentsWithPack(unverifiedPacks, relatedPack ))

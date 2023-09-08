@@ -1,4 +1,5 @@
 import { DataWithValidField, UnverifiedData, VerifildData } from "@/protocols";
+import packRepository from "@/repositories/pack-repository";
 import productRepository from "@/repositories/product-Repository";
 import validateService from "@/services/validate-service";
 
@@ -84,7 +85,6 @@ describe("Validate service teste suite", () => {
 
 
     const result = await validateService.validateData(data);
-    console.log(result)
     expect(result[0]).toEqual({
       product_code: 1,
       new_price: 10.00,
@@ -114,7 +114,6 @@ describe("Validate service teste suite", () => {
 
 
     const result = await validateService.validateData(data);
-    console.log(result)
     expect(result[0]).toEqual({
       product_code: 1,
       new_price: 10.31,
@@ -144,7 +143,6 @@ describe("Validate service teste suite", () => {
 
 
     const result = await validateService.validateData(data);
-    console.log(result)
     expect(result[0]).toEqual({
       product_code: 1,
       new_price: 13.31,
@@ -154,5 +152,327 @@ describe("Validate service teste suite", () => {
       sales_price: 11.99,
       is_pack: false
     });
+  });
+
+  it("When you have a package type product, but you don't have the component type product in the same file", async () => {
+    const data: UnverifiedData[]  = [{ product_code: 1, new_price: 11.98 }];
+    const product = {
+        code: 1,
+        name: "Pacote de Bala",
+        cost_price: 10.09,
+        sales_price: 11.99,
+        is_pack: true
+    }
+
+    const components = [
+      {
+        code: 2,
+        name: 'Bala',
+        cost_price: 6.56,
+        sales_price: 7.29
+      }
+    ]
+
+    jest
+    .spyOn(productRepository, "findByCode")
+    .mockImplementationOnce((): any => {
+        return product
+    })
+
+    jest.spyOn(packRepository, "isPack")
+    .mockImplementationOnce((): any => {
+      return true
+    })
+
+    jest.spyOn(packRepository, "getComponents")
+    .mockImplementationOnce((): any => {
+      return components
+    })
+
+    const result = await validateService.validateData(data);
+    expect(result[0]).toEqual({
+      product_code: 1,
+      new_price: 11.98,
+      valid: false,
+      error: "Produto componente ausente no arquivo.",
+      name: "Pacote de Bala",
+      sales_price: 11.99,
+      is_pack: true
+    });
+  });
+
+  it("When you have a component type product but don't have pack type product in the same file", async () => {
+    const data: UnverifiedData[]  = [ {product_code: 2, new_price: 2.01 }];
+    const product = {
+      code: 2,
+      name: "Bala",
+      cost_price: 1.56,
+      sales_price: 2.00,
+      is_pack: true
+    }
+
+    const relatedPack = [
+      {
+        code: 1,
+        name: "Pacote de Bala",
+        cost_price: 10.09,
+        sales_price: 11.99,
+      }
+    ]
+
+    jest
+    .spyOn(productRepository, "findByCode")
+    .mockImplementationOnce((): any => {
+        return product
+    })
+
+    jest.spyOn(packRepository, "isPack")
+    .mockImplementationOnce((): any => {
+      return false
+    })
+
+    jest.spyOn(packRepository, "getRelatedPacks")
+    .mockImplementationOnce((): any => {
+      return relatedPack
+    })
+
+    const result = await validateService.validateData(data);
+    expect(result[0]).toEqual({
+      product_code: 2,
+      new_price: 2.01,
+      valid: false,
+      error: "Produto tipo Pack ausente no arquivo.",
+      name: "Bala",
+      sales_price: 2.00,
+      is_pack: true
+    });
+  });
+
+  it("When you have a package and component type product in the same file, but sum of compenest is diferent of the packege new price", async () => {
+    const data: UnverifiedData[]  = [{ product_code: 1, new_price: 11.98 }, {product_code: 2, new_price: 2.01 }];
+    
+    const firstProduct = {
+      code: 1,
+      name: "Pacote de Bala",
+      cost_price: 10.09,
+      sales_price: 11.99,
+      is_pack: true
+  }
+    
+    const secondProduct = {
+      code: 2,
+      name: "Bala",
+      cost_price: 1.56,
+      sales_price: 2.00,
+      is_pack: true
+    }
+
+    const components = [
+      {
+        code: 2,
+        name: 'Bala',
+        cost_price: 6.56,
+        sales_price: 7.29
+      }
+    ]
+
+    const relatedPack = 
+      {
+        code: 1,
+        name: "Pacote de Bala",
+        cost_price: 10.09,
+        sales_price: 11.99,
+      }
+    
+
+    jest
+    .spyOn(productRepository, "findByCode")
+    .mockImplementationOnce((): any => {
+        return firstProduct
+    })
+
+    jest
+    .spyOn(productRepository, "findByCode")
+    .mockImplementationOnce((): any => {
+        return secondProduct
+    })
+
+    jest.spyOn(packRepository, "isPack")
+    .mockImplementationOnce((): any => {
+      return true
+    })
+
+    jest.spyOn(packRepository, "getComponents")
+    .mockImplementationOnce((): any => {
+      return components
+    })
+
+    jest.spyOn(packRepository, "getQtyByComponentId")
+    .mockImplementationOnce((): any => {
+      return 6
+    })
+
+    jest.spyOn(productRepository, "getComponentOfPackValue")
+    .mockImplementationOnce((): any => {
+      return 0
+    })
+
+    jest.spyOn(packRepository, "isPack")
+    .mockImplementationOnce((): any => {
+      return false
+    })
+
+    jest.spyOn(packRepository, "getRelatedPacks")
+    .mockImplementationOnce((): any => {
+      return relatedPack
+    })
+
+    jest.spyOn(packRepository, "getComponents")
+    .mockImplementationOnce((): any => {
+      return components
+    })
+
+    jest.spyOn(packRepository, "getQtyByComponentId")
+    .mockImplementationOnce((): any => {
+      return 6
+    })
+
+    jest.spyOn(productRepository, "getComponentOfPackValue")
+    .mockImplementationOnce((): any => {
+      return 0
+    })
+
+    const result = await validateService.validateData(data);
+    expect(result).toEqual([{
+      product_code: 1,
+      new_price: 11.98,
+      valid: false,
+      error: "Preço da soma dos components diferente do preço do pacote.",
+      name: "Pacote de Bala",
+      sales_price: 11.99,
+      is_pack: true
+    },
+    {
+      product_code: 2,
+      new_price: 2.01,
+      valid: false,
+      error: "Preço da soma dos components diferente do preço do pacote.",
+      name: "Bala",
+      sales_price: 2.00,
+      is_pack: true
+    }]);
+  });
+
+  it("When you have a package and component type product in the same file, and sum of compenest is equal of the packege new price", async () => {
+    const data: UnverifiedData[]  = [{ product_code: 1, new_price: 12.00 }, {product_code: 2, new_price: 2.00 }];
+    
+    const firstProduct = {
+      code: 1,
+      name: "Pacote de Bala",
+      cost_price: 10.09,
+      sales_price: 11.99,
+      is_pack: true
+  }
+    
+    const secondProduct = {
+      code: 2,
+      name: "Bala",
+      cost_price: 1.56,
+      sales_price: 1.99,
+      is_pack: true
+    }
+
+    const components = [
+      {
+        code: 2,
+        name: 'Bala',
+        cost_price: 6.56,
+        sales_price: 7.29
+      }
+    ]
+
+    const relatedPack = 
+      {
+        code: 1,
+        name: "Pacote de Bala",
+        cost_price: 10.09,
+        sales_price: 11.99,
+      }
+    
+
+    jest
+    .spyOn(productRepository, "findByCode")
+    .mockImplementationOnce((): any => {
+        return firstProduct
+    })
+
+    jest
+    .spyOn(productRepository, "findByCode")
+    .mockImplementationOnce((): any => {
+        return secondProduct
+    })
+
+    jest.spyOn(packRepository, "isPack")
+    .mockImplementationOnce((): any => {
+      return true
+    })
+
+    jest.spyOn(packRepository, "getComponents")
+    .mockImplementationOnce((): any => {
+      return components
+    })
+
+    jest.spyOn(packRepository, "getQtyByComponentId")
+    .mockImplementationOnce((): any => {
+      return 6
+    })
+
+    jest.spyOn(productRepository, "getComponentOfPackValue")
+    .mockImplementationOnce((): any => {
+      return 0
+    })
+
+    jest.spyOn(packRepository, "isPack")
+    .mockImplementationOnce((): any => {
+      return false
+    })
+
+    jest.spyOn(packRepository, "getRelatedPacks")
+    .mockImplementationOnce((): any => {
+      return relatedPack
+    })
+
+    jest.spyOn(packRepository, "getComponents")
+    .mockImplementationOnce((): any => {
+      return components
+    })
+
+    jest.spyOn(packRepository, "getQtyByComponentId")
+    .mockImplementationOnce((): any => {
+      return 6
+    })
+
+    jest.spyOn(productRepository, "getComponentOfPackValue")
+    .mockImplementationOnce((): any => {
+      return 0
+    })
+
+    const result = await validateService.validateData(data);
+    expect(result).toEqual([{
+      product_code: 1,
+      new_price: 12.00,
+      valid: true,
+      name: "Pacote de Bala",
+      sales_price: 11.99,
+      is_pack: true
+    },
+    {
+      product_code: 2,
+      new_price: 2.00,
+      valid: true,
+      name: "Bala",
+      sales_price: 1.99,
+      is_pack: true
+    }]);
   });
 });
