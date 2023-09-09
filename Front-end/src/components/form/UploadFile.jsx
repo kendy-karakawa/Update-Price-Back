@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Papa from "papaparse";
 import ConnectApi from "../../service/api";
 import { BsCloudUpload } from "react-icons/bs";
@@ -6,6 +6,12 @@ import { BsCloudUpload } from "react-icons/bs";
 
 export default function UploadFile({setInputOpen, setProducts}) {
   const [file, setFile] = useState(null);
+  const [openButtton, setOpenButton] = useState(false)
+
+  useEffect(()=>{
+    if(file) setOpenButton(true)
+  },[file])
+
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -73,11 +79,11 @@ export default function UploadFile({setInputOpen, setProducts}) {
           </label>
         </div>
 
-        <button
+        {openButtton && <button
           className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 w-3/12 mt-5"
         >
-          Carregar
-        </button>
+          VALIDAR
+        </button>}
       </form>
     </div>
   );
