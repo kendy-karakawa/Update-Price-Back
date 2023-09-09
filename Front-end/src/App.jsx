@@ -35,7 +35,7 @@ export default function App() {
   }, [products])
 
   return (
-    <div className="w-full h-screen p-10 bg-lime-100">
+    <div className="w-full h-screen p-10 bg-lime-100 overflow-auto">
       {inputOpen && (
         <UploadFile setInputOpen={setInputOpen} setProducts={setProducts} />
       )}
