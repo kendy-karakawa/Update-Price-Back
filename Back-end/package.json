@@ -8,7 +8,7 @@
     "migration:run": "prisma migrate deploy",
     "seed": "prisma db seed",
     "dev": "nodemon --watch 'src/' --exec 'ts-node -r tsconfig-paths/register ./src/server.ts' -e ts",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand --coverage"
   },
   "keywords": [],
   "author": "",
